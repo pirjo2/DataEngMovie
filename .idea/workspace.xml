@@ -5,8 +5,18 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="fdec2a46-f897-41ad-9e9f-173c6f030a2e" name="Changes" comment="airflow plz">
-      <change beforePath="$PROJECT_DIR$/.gitattributes" beforeDir="false" afterPath="$PROJECT_DIR$/.gitattributes" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/dataSources.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/dbnavigator.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/8.8/executionHistory/executionHistory.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.8/executionHistory/executionHistory.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/8.8/fileHashes/fileHashes.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.8/fileHashes/fileHashes.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/file-system.probe" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/file-system.probe" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/airflow/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/airflow/Dockerfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/airflow/dags/__pycache__/first.cpython-38.pyc" beforeDir="false" afterPath="$PROJECT_DIR$/airflow/dags/__pycache__/first.cpython-38.pyc" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/airflow/dags/first.py" beforeDir="false" afterPath="$PROJECT_DIR$/airflow/dags/first.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/airflow/docker-compose.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/airflow/docker-compose.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/star_schema.db" beforeDir="false" afterPath="$PROJECT_DIR$/star_schema.db" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -63,6 +73,11 @@
     </option>
   </component>
   <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="master" />
+      </map>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
@@ -73,7 +88,7 @@
 }</component>
   <component name="GithubPullRequestsUISettings">{
   &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/pirjo2/DataEngineering.git&quot;,
+    &quot;url&quot;: &quot;https://github.com/pirjo2/DataEngMovie.git&quot;,
     &quot;accountId&quot;: &quot;1f1a04af-b706-4048-aa5b-d0f834a6f512&quot;
   }
 }</component>
@@ -105,17 +120,18 @@
     "Gradle.DataEngProject [dependencies].executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "git-widget-placeholder": "master",
+    "git-widget-placeholder": "pirjo",
     "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/Users/joelo/IdeaProjects/DataEngProject/star_schema.db",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
-    "project.structure.last.edited": "Modules",
+    "project.structure.last.edited": "Artifacts",
     "project.structure.proportion": "0.15",
     "project.structure.side.proportion": "0.2",
-    "settings.editor.selected.configurable": "reference.settingsdialog.project.gradle",
+    "settings.editor.selected.configurable": "preferences.pluginManager",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
@@ -124,7 +140,7 @@
       <recent name="C:\Users\joelo\IdeaProjects\DataEngProject\src\main\java" />
     </key>
   </component>
-  <component name="RunManager" selected="Application.testarray">
+  <component name="RunManager" selected="Application.testarray2">
     <configuration name="GenreMoviequery" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="GenreMoviequery" />
       <module name="DataEngProject.main" />
@@ -206,7 +222,8 @@
       <workItem from="1731281413791" duration="1276000" />
       <workItem from="1731282751617" duration="2248000" />
       <workItem from="1733215076067" duration="10744000" />
-      <workItem from="1733339235539" duration="10386000" />
+      <workItem from="1733339235539" duration="19277000" />
+      <workItem from="1733582996587" duration="12020000" />
     </task>
     <task id="LOCAL−00001" summary="algus">
       <option name="closed" value="true" />

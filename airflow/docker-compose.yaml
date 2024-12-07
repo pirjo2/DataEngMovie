@@ -1,8 +1,37 @@
 services:
+  airflow-init:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    #image: apache/airflow:2.7.1
+    container_name: airflow-init
+    #command: bash -c "airflow db init"
+    command: bash -c "airflow db migrate && airflow users create \
+      --username airflow \
+      --password airflow \
+      --firstname airflow \
+      --lastname airflow \
+      --role Admin \
+      --email admin@example.com"
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
+      - ./plugins:/opt/airflow/plugins
+
   airflow-webserver:
-    image: apache/airflow:2.7.1
+    build:
+      context: .
+      dockerfile: Dockerfile
+    #image: apache/airflow:2.7.1
     container_name: airflow-webserver
     depends_on:
+      - airflow-init
       - airflow-scheduler
       - postgres
       - redis
@@ -19,13 +48,16 @@ services:
       - ./logs:/opt/airflow/logs
       - ./plugins:/opt/airflow/plugins
       - ../star_schema.db:/data/star_schema.db
-    command: >
-      bash -c "pip install duckdb && airflow webserver"
+    command: ["airflow", "webserver"]
 
   airflow-scheduler:
-    image: apache/airflow:2.7.1
+    build:
+      context: .
+      dockerfile: Dockerfile
+    #image: apache/airflow:2.7.1
     container_name: airflow-scheduler
     depends_on:
+      - airflow-init
       - postgres
       - redis
     environment:
@@ -39,8 +71,7 @@ services:
       - ./logs:/opt/airflow/logs
       - ./plugins:/opt/airflow/plugins
       - ../star_schema.db:/data/star_schema.db
-    command: >
-      bash -c "pip install duckdb && airflow scheduler"
+    command: ["airflow", "scheduler"]
 
   postgres:
     image: postgres:15
@@ -67,8 +98,27 @@ services:
   #    - ./data:/data
   #  command: ["duckdb", "/data/star_schema.db"]
 
+  duckdb:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: duckdb
+    depends_on:
+      - airflow-init
+      - postgres
+      - redis
+    environment:
+      - DUCKDB_PATH=/data/star_schema.db
+    volumes:
+      - ../star_schema.db:/data/star_schema.db
+    stdin_open: true
+    tty: true
+
   airflow-worker:
-    image: apache/airflow:2.7.1
+    build:
+      context: .
+      dockerfile: Dockerfile
+    #image: apache/airflow:2.7.1
     container_name: airflow-worker
     depends_on:
       - airflow-scheduler
@@ -85,12 +135,11 @@ services:
       - ./logs:/opt/airflow/logs
       - ./plugins:/opt/airflow/plugins
       - ../star_schema.db:/data/star_schema.db  # Mount star_schema.db from parent directory
-    command: >
-      bash -c "pip install duckdb && airflow celery worker"
+    command: ["airflow", "celery", "worker"]
 
 volumes:
   postgres_data:
   airflow_logs:
   airflow_dags:
   airflow_plugins:
-  #duckdb_data:
+  duckdb_data:

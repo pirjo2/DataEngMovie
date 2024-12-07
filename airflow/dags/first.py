@@ -11,10 +11,40 @@ def test_duckdb_connection():
         conn = duckdb.connect(database='star_schema.db')
 
         # Query to list all tables in the schema
+        #query = """
+        #    SELECT table_name
+        #    FROM information_schema.tables
+        #    WHERE table_schema = 'main';  -- Adjust schema name if necessary
+        #"""
         query = """
-            SELECT table_name
-            FROM information_schema.tables
-            WHERE table_schema = 'main';  -- Adjust schema name if necessary
+            CREATE TABLE IF NOT EXISTS GenreDim (
+                    GenreID INTEGER PRIMARY KEY,
+                    GenreName TEXT
+                );
+            CREATE TABLE IF NOT EXISTS RatingFact (
+                    FilmID INTEGER PRIMARY KEY,
+                    Rating FLOAT,
+                    Genres JSON
+                );
+            DELETE FROM GenreDim;
+            DELETE FROM RatingFact;
+            INSERT INTO GenreDim (GenreID, GenreName) VALUES
+                (1, 'Action'),
+                (2, 'Comedy'),
+                (3, 'Horror'),
+                (4, 'Thriller'),
+                (5, 'Drama');
+            INSERT INTO RatingFact (FilmID, Rating, Genres) VALUES
+                (1, 4.5, '["Action", "Comedy"]'),
+                (2, 3.0, '["Horror", "Thriller"]'),
+                (3, 4.0, '["Drama"]'),
+                (4, 4.7, '["Action", "Drama"]'),
+                (5, 2.5, '["Comedy", "Horror"]');
+            SELECT rf.FilmID, rf.Rating, gd.GenreName
+                FROM RatingFact rf
+                JOIN GenreDim gd ON 
+                json_extract(rf.Genres, '$') LIKE '%' || gd.GenreName || '%'
+                LIMIT 10;
         """
 
         # Execute the query to fetch all table names
@@ -23,6 +53,8 @@ def test_duckdb_connection():
         # Log the result
         logging.info("Tables in DuckDB schema:")
         for row in result:
+            print("fSiin")
+            print(row)
             logging.info(row[0])  # Print each table name
 
         # Close the connection
