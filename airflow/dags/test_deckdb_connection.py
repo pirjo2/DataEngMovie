@@ -11,9 +11,11 @@ def test_duckdb_connection():
         conn = duckdb.connect(database='star_schema.db')
 
         # Run a simple query to check if the connection is successful
-        result = conn.execute("SELECT 1").fetchall()
+        result = conn.execute("SELECT * from GenreDim").fetchall()
 
         # Log the result to confirm the connection was successful
+        print("siin")
+        print(result)
         logging.info(f"Connection test successful: {result}")
 
         # Close the connection
