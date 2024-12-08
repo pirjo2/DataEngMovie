@@ -86,6 +86,26 @@ def preprocess_movielens(movielens):
 
     return movies, ratings
 
+def age_restrictions(movies):
+    restrictions = {
+      "R": ["Horror"], 
+      "PG-13": ["Action", "Thriller", "Crime", "Science Fiction", "War", "Western"],
+      "PG": ["Romance", "Drama", "Comedy"]
+    }
+
+    def get_restriction(genres):
+    
+        for r, g in restrictions.items():
+          genre_intersection = list(set(g) & set(genres))
+    
+          if len(genre_intersection) > 0:
+            return r
+    
+        return "G"
+    
+    movies["age_restriction"] = movies["genres"].apply(get_restriction)
+    
+    return movies
 
 def extract_keywords(kv_json, key):
     kv = json.loads(kv_json)
@@ -199,6 +219,7 @@ def process_data(ti, **kwargs):
     ratings = ratings[ratings["movieId"].isin(movielens["movieId"])]
 
     tmdb = preprocess_movies(tmdb)
+    tmdb = age_restrictions(tmdb)
     cast_df, crew_df = preprocess_cast_crew(credits)
 
     holiday_df = date_table(tmdb)
