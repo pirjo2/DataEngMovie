@@ -1,27 +1,28 @@
 import json
 import pandas as pd
 import re
+import os
 
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from datetime import datetime
 
 def ingest_movielens(**kwargs):
-    with open('./movie_data/raw_movielens.json', 'r') as f:
+    with open('../movie_data/raw_unstructured_data.json', 'r') as f:
         data = json.load(f)
 
     print("Movielens Data Loaded")
     return data
 
 def ingest_tmdb(**kwargs):
-    movies = pd.read_csv("./movie_data/tmdb_movies.csv")
-    credits = pd.read_csv("./movie_data/credits.csv")
+    movies = pd.read_csv("../movie_data/tmdb_5000_movies.csv")
+    credits = pd.read_csv("../movie_data/tmdb_5000_credits.csv")
 
     print("TMDB Data Loaded")
     return movies, credits
 
 def ingest_users(**kwargs):
-    df = pd.read_csv('./movie_data/users.csv')
+    df = pd.read_csv('../movie_data/users.csv')
 
     print("User Data Loaded")
     return df
@@ -204,6 +205,10 @@ def date_table(movies, **kwargs):
 def process_data(ti, **kwargs):
     print("Data ingested, started processing.")
 
+    # Ensure the directory exists
+    output_dir = '../movie_data'
+    os.makedirs(output_dir, exist_ok=True)
+
     movielens_raw = ti.xcom_pull(task_ids='ingest_movielens')
     tmdb, credits = ti.xcom_pull(task_ids='ingest_tmdb')
 
@@ -224,12 +229,12 @@ def process_data(ti, **kwargs):
 
     holiday_df = date_table(tmdb)
 
-    movielens.to_csv('./movie_data/movielens.csv', index=False)
-    ratings.to_csv('./movie_data/ratings.csv', index=False)
-    tmdb.to_csv('./movie_data/tmdb.csv', index=False)
-    cast_df.to_csv('./movie_data/cast.csv', index=False)
-    crew_df.to_csv('./movie_data/crew.csv', index=False)
-    holiday_df.to_csv('./movie_data/holidays.csv', index=False)
+    movielens.to_csv(f'{output_dir}/movielens.csv', index=False)
+    ratings.to_csv(f'{output_dir}/ratings.csv', index=False)
+    tmdb.to_csv(f'{output_dir}/tmdb.csv', index=False)
+    cast_df.to_csv(f'{output_dir}/cast.csv', index=False)
+    crew_df.to_csv(f'{output_dir}/crew.csv', index=False)
+    holiday_df.to_csv(f'{output_dir}/holidays.csv', index=False)
 
     print("Processed DataFrames saved as files.")
 

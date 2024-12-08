@@ -23,6 +23,7 @@ services:
       - ./dags:/opt/airflow/dags
       - ./logs:/opt/airflow/logs
       - ./plugins:/opt/airflow/plugins
+      - ../movie_data:/opt/movie_data
 
   airflow-webserver:
     build:
@@ -48,6 +49,7 @@ services:
       - ./logs:/opt/airflow/logs
       - ./plugins:/opt/airflow/plugins
       - ../star_schema.db:/data/star_schema.db
+      - ../movie_data:/opt/movie_data
     command: ["airflow", "webserver"]
 
   airflow-scheduler:
@@ -71,6 +73,7 @@ services:
       - ./logs:/opt/airflow/logs
       - ./plugins:/opt/airflow/plugins
       - ../star_schema.db:/data/star_schema.db
+      - ../movie_data:/opt/movie_data
     command: ["airflow", "scheduler"]
 
   postgres:
@@ -111,6 +114,7 @@ services:
       - DUCKDB_PATH=/data/star_schema.db
     volumes:
       - ../star_schema.db:/data/star_schema.db
+      - ../movie_data:/opt/movie_data
     stdin_open: true
     tty: true
 
@@ -134,7 +138,8 @@ services:
       - ./dags:/opt/airflow/dags
       - ./logs:/opt/airflow/logs
       - ./plugins:/opt/airflow/plugins
-      - ../star_schema.db:/data/star_schema.db  # Mount star_schema.db from parent directory
+      - ../star_schema.db:/data/star_schema.db
+      - ../movie_data:/opt/movie_data
     command: ["airflow", "celery", "worker"]
 
 volumes:
