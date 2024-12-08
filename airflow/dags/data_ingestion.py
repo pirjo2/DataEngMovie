@@ -53,7 +53,7 @@ def preprocess_movielens(movielens):
 
         movies_data.append({
             "movieId": movie_id,
-            "title": title,
+        #    "title": title,
         #    "release_year": release_year,
         #    "genres": genres,
             "imdbId": imdb_id,
@@ -70,7 +70,7 @@ def preprocess_movielens(movielens):
                 #timestamp = user_parts[1]
 
                 ratings_data.append({
-                    "userId": user_id,
+                    "user_id": user_id,
                     "movieId": movie_id,
                     "rating": rating,
                 #    "timestamp": timestamp
@@ -80,12 +80,15 @@ def preprocess_movielens(movielens):
     ratings = pd.DataFrame(ratings_data)
     
     # ratings['timestamp'] = pd.to_numeric(ratings['timestamp'], errors='coerce', downcast='integer')
-    ratings['userId'] = pd.to_numeric(ratings['userId'], errors='coerce', downcast='integer')
+    ratings['user_id'] = pd.to_numeric(ratings['user_id'], errors='coerce', downcast='integer')
 
     movies['imdbId'] = pd.to_numeric(movies['imdbId'], errors='coerce', downcast='integer')
     movies['tmdbId'] = pd.to_numeric(movies['tmdbId'], errors='coerce', downcast='integer')
 
-    return movies, ratings
+    ratings_merged = pd.merge(ratings, movies[['movieId', 'tmdbId']], on='movieId', how='left')
+    ratings_merged = ratings_merged.drop(columns=["movieId"])
+    
+    return ratings_merged
 
 def age_restrictions(movies):
     restrictions = {
@@ -114,24 +117,27 @@ def extract_keywords(kv_json, key):
 
 def preprocess_movies(tmdb):
 
-  tmdb['keywords'] = tmdb['keywords'].apply(extract_keywords, args=('name',))
-  tmdb['genres'] = tmdb['genres'].apply(extract_keywords, args=('name',))
-  
-  tmdb["production_companies"] = tmdb["production_companies"].apply(extract_keywords, args=('name',))
-  #tmdb['production_countries_iso'] = tmdb['production_countries'].apply(extract_keywords, args=('iso_3166_1',))
-  tmdb['production_countries'] = tmdb['production_countries'].apply(extract_keywords, args=('name',))
-
-  #tmdb['spoken_languages_iso'] = tmdb['spoken_languages'].apply(extract_keywords, args=('iso_639_1',))
-  tmdb['spoken_languages'] = tmdb['spoken_languages'].apply(extract_keywords, args=('name',))
-
-  tmdb['release_date'] = pd.to_datetime(tmdb['release_date'], errors='coerce')
-
-  tmdb['budget'] = pd.to_numeric(tmdb['budget'], errors='coerce', downcast='integer')
-  tmdb['high_budget'] = tmdb['budget'] > 1000000
-
-  tmdb = tmdb.drop(columns=['homepage', 'tagline', 'status', 'budget', 'original_title', 'popularity', 'revenue', 'spoken_languages', 'vote_average', 'vote_count']) # missing for many, cannot aggregate / unnecessary
-
-  return tmdb
+    tmdb['keywords'] = tmdb['keywords'].apply(extract_keywords, args=('name',))
+    tmdb['genres'] = tmdb['genres'].apply(extract_keywords, args=('name',))
+    
+    tmdb["production_companies"] = tmdb["production_companies"].apply(extract_keywords, args=('name',))
+    #tmdb['production_countries_iso'] = tmdb['production_countries'].apply(extract_keywords, args=('iso_3166_1',))
+    tmdb['production_countries'] = tmdb['production_countries'].apply(extract_keywords, args=('name',))
+    
+    #tmdb['spoken_languages_iso'] = tmdb['spoken_languages'].apply(extract_keywords, args=('iso_639_1',))
+    tmdb['spoken_languages'] = tmdb['spoken_languages'].apply(extract_keywords, args=('name',))
+    
+    tmdb['release_date'] = pd.to_datetime(tmdb['release_date'], errors='coerce')
+    
+    tmdb['budget'] = pd.to_numeric(tmdb['budget'], errors='coerce', downcast='integer')
+    tmdb['high_budget'] = tmdb['budget'] > 1000000
+    
+    tmdb = tmdb.drop(columns=['homepage', 'tagline', 'status', 'budget', 'original_title', 'popularity', 'revenue', 'spoken_languages', 'vote_average', 'vote_count']) # missing for many, cannot aggregate / unnecessary
+    
+    tmdb = age_restrictions(tmdb)
+    tmdb = tmdb.rename(columns={"id": "tmdbId"})
+    
+    return tmdb
 
 def preprocess_cast_crew(credits):
 
@@ -145,15 +151,15 @@ def preprocess_cast_crew(credits):
 
     for actor in cast:
         cast_df.append({
-            "movieId": movie_id,
-            "actor": actor["name"],
+            "tmdbId": movie_id,
+            "name": actor["name"],
             "character": actor["character"],
             "gender": "F" if actor["gender"] == 1 else "M"
         })
 
     for member in crew:
         crew_df.append({
-        "movieId": movie_id,
+        "tmdbId": movie_id,
         "name": member["name"],
         "job": member["job"],
         "department": member["department"],
@@ -186,8 +192,8 @@ def date_table(movies, **kwargs):
         spring = {"start": datetime(date.year, 3, 1), "end": datetime(date.year, 5, 31)}
 
         result = {}
-        result["movie_id"] = movie_id
-        result["date"] = date
+        result["tmdbId"] = movie_id
+        result["release_date"] = date
 
         for holiday, range_ in holidays.items():
             result[holiday] = range_["start"] <= date <= range_["end"]
@@ -197,7 +203,7 @@ def date_table(movies, **kwargs):
 
         holiday_df_data.append(result)
 
-    holiday_df = pd.DataFrame(holiday_df_data, columns=["movie_id", "date"] + list(holidays.keys()) + ["is_summer", "is_spring"])
+    holiday_df = pd.DataFrame(holiday_df_data, columns=["tmdbId", "release_date"] + list(holidays.keys()) + ["is_summer", "is_spring"])
 
     return holiday_df
 
@@ -212,24 +218,21 @@ def process_data(ti, **kwargs):
     movielens_raw = ti.xcom_pull(task_ids='ingest_movielens')
     tmdb, credits = ti.xcom_pull(task_ids='ingest_tmdb')
 
-    movielens, ratings = preprocess_movielens(movielens_raw)
+    ratings = preprocess_movielens(movielens_raw)
 
-    movie_intersection = list(set(tmdb["id"].unique()) & set(movielens["tmdbId"].unique()))
+    movie_intersection = list(set(tmdb["id"].unique()) & set(ratings["tmdbId"].unique()))
 
     tmdb = tmdb[tmdb["id"].isin(movie_intersection)]
     credits = credits[credits["movie_id"].isin(movie_intersection)]
 
     # Preproccesed datasets
-    movielens = movielens[movielens["tmdbId"].isin(movie_intersection)]
-    ratings = ratings[ratings["movieId"].isin(movielens["movieId"])]
+    ratings = ratings[ratings["tmdbId"].isin(movie_intersection)]
 
     tmdb = preprocess_movies(tmdb)
-    tmdb = age_restrictions(tmdb)
     cast_df, crew_df = preprocess_cast_crew(credits)
 
     holiday_df = date_table(tmdb)
 
-    movielens.to_csv(f'{output_dir}/movielens.csv', index=False)
     ratings.to_csv(f'{output_dir}/ratings.csv', index=False)
     tmdb.to_csv(f'{output_dir}/tmdb.csv', index=False)
     cast_df.to_csv(f'{output_dir}/cast.csv', index=False)
