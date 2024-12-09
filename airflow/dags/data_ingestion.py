@@ -173,11 +173,13 @@ def preprocess_cast_crew(credits):
 
 
 def date_table(movies, **kwargs):
-
+    print(f"SIIIN")
+    print(movies.columns)
     holiday_df_data = []
 
     for _, row in movies.iterrows():
-        movie_id = row["id"]
+        #movie_id = row["id"]
+        movie_id = row["tmdbId"]
         date = row["release_date"]
 
         holidays = {
