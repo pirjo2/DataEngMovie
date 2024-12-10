@@ -93,13 +93,9 @@ services:
     container_name: redis
     ports:
       - "6379:6379"
-
-  #duckdb:
-  #  image: datacatering/duckdb:v1.1.3
-  #  container_name: duckdb
-  #  volumes:
-  #    - ./data:/data
-  #  command: ["duckdb", "/data/star_schema.db"]
+    volumes:
+      - redis_data:/data
+    command: [ "redis-server", "--appendonly", "yes" ]
 
   duckdb:
     build:
@@ -147,4 +143,5 @@ volumes:
   airflow_logs:
   airflow_dags:
   airflow_plugins:
+  redis_data:
   duckdb_data:

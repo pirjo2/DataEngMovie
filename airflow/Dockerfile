@@ -51,6 +51,9 @@ RUN python -m ensurepip && pip install --upgrade pip && \
 # Install DuckDB Python package
 RUN pip install --no-cache-dir duckdb
 RUN pip install duckdb
+
+RUN pip install --no-cache-dir redis
+
 # Switch back to the Airflow user to follow best practices
 #USER airflow
 
