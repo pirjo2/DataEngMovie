@@ -152,7 +152,11 @@ filtered_data["Rating"] = filtered_data["Rating"].apply(lambda x: f"{x:.1f}")
 st.html("""
     <style>
         .stMainBlockContainer {
-            max-width: 85rem;
+            max-width: 85rem;   
+        }
+        
+        .stSlider, .stMultiSelect, .stSelectbox {
+            max-width: 50rem;
         }
     </style>
     """
