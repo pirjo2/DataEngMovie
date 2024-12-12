@@ -9,6 +9,8 @@ def print_table_names():
         # Connect to the DuckDB database
         conn = duckdb.connect(database="star_schema.db")
 
+
+
         # Fetch all table names
         result = conn.execute("SHOW TABLES;").fetchall()
 

@@ -54,6 +54,8 @@ RUN pip install duckdb
 
 RUN pip install --no-cache-dir redis
 
+RUN pip install streamlit
+
 # Switch back to the Airflow user to follow best practices
 #USER airflow
 
