@@ -149,22 +149,22 @@ def preprocess_cast_crew(credits):
         crew = json.loads(movie["crew"])
         movie_id = movie["movie_id"]
 
-    for actor in cast:
-        cast_df.append({
-            "tmdbId": movie_id,
-            "name": actor["name"],
-            "character": actor["character"],
-            "gender": "F" if actor["gender"] == 1 else "M"
-        })
+        for actor in cast:
+            cast_df.append({
+                "tmdbId": movie_id,
+                "name": actor["name"],
+                "character": actor["character"],
+                "gender": "F" if actor["gender"] == 1 else "M"
+            })
 
-    for member in crew:
-        crew_df.append({
-        "tmdbId": movie_id,
-        "name": member["name"],
-        "job": member["job"],
-        "department": member["department"],
-        "gender": "F" if member["gender"] == 1 else "M"
-        })
+        for member in crew:
+            crew_df.append({
+            "tmdbId": movie_id,
+            "name": member["name"],
+            "job": member["job"],
+            "department": member["department"],
+            "gender": "F" if member["gender"] == 1 else "M"
+            })
 
     cast_df = pd.DataFrame(cast_df)
     crew_df = pd.DataFrame(crew_df)
