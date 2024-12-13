@@ -31,3 +31,9 @@ bin/
 
 ### Data files ###
 movie_data/
+
+### Intellij ###
+.idea
+
+### Gradle ###
+.gradle
