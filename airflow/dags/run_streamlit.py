@@ -21,7 +21,7 @@ with DAG(
     run_streamlit_script = BashOperator(
         task_id="run_streamlit_app",
         bash_command="streamlit run main.py --server.address=0.0.0.0 --server.port=8051",
-        cwd=f"{os.environ['AIRFLOW_HOME']}/data/streamlit"
+        cwd=f"{os.environ['AIRFLOW_HOME']}/dags/streamlit"
     )
 
     run_streamlit_script
