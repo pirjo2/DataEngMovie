@@ -11,7 +11,6 @@ def load_data():
         # Connect to DuckDB
         conn = duckdb.connect(database="star_schema.db")
 
-
         query = """
         SELECT
             md.title AS "Title",
@@ -37,6 +36,7 @@ def load_data():
         """
         data = conn.execute(query).fetchdf()
 
+
         return data
     except Exception as e:
         print(f"Error loading data: {e}")
@@ -48,7 +48,6 @@ def load_data():
 
 # Function to filter and sort the movies based on provided filters
 def filter_and_sort_movies2(data, filters_applied, sort_option):
-    filters_applied = data
     # Apply filters to data
     if filters_applied.get('release_year'):
         data = data[(data["release_date"] >= filters_applied['release_year'][0]) &
@@ -77,7 +76,7 @@ def display_data(data):
 # Airflow Task: Function to fetch and process the data
 def airflow_task(filters_applied, sort_option):
     data = load_data()
-    filtered_data = filter_and_sort_movies(data, filters_applied, sort_option)
+    filtered_data = filter_and_sort_movies2(data, filters_applied, sort_option)
     return filtered_data
 
 # Airflow DAG setup
@@ -119,4 +118,19 @@ filtered_data = filter_and_sort_movies2(data, filters_applied, sort_option)
 # Display data with Streamlit
 display_data(filtered_data)
 
+'''
+'''
+# Define task for filtering and sorting movies
+filter_sort_task = PythonOperator(
+    task_id='filter_and_sort_movies2',
+    python_callable=airflow_task,
+    op_kwargs={
+        'filters_applied': {
+            'release_year': (2000, 2020),
+            'rating': (0.0, 10.0),
+        },
+        'sort_option': "Rating (Highest-Lowest)"
+    },
+    dag=dag,
+)
 '''

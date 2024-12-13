@@ -14,18 +14,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     ca-certificates \
     unzip \
-    #python3.12 \
-    #python3.12-venv \
-    #python3.12-distutils && \
-    #ln -sf /usr/bin/python3.12 /usr/bin/python3 && \
-    #ln -sf /usr/bin/python3.12 /usr/bin/python && \
-    #rm -rf /var/lib/apt/lists/*
     python3-venv \
     python3-distutils && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
-
-
 
 # Install DuckDB CLI based on architecture
 RUN arch=$(dpkg --print-architecture) && \
@@ -42,25 +34,23 @@ RUN arch=$(dpkg --print-architecture) && \
     rm duckdb.zip
 
 USER airflow
-
 RUN python -m ensurepip && pip install --upgrade pip && \
-    pip install --no-cache-dir --index-url=https://pypi.org/simple \
-    duckdb 'pyarrow<10.1.0,>=10.0.1' azure-storage-common apache-airflow-providers-google[all]
+    pip install --no-cache-dir \
+    duckdb \
+    'pyarrow<10.1.0,>=10.0.1' \
+    azure-storage-common \
+    apache-airflow-providers-google[all] \
+    redis
 
-
-# Install DuckDB Python package
-RUN pip install --no-cache-dir duckdb
-RUN pip install duckdb
-
-RUN pip install --no-cache-dir redis
-
-RUN pip install streamlit
-
-# Switch back to the Airflow user to follow best practices
-#USER airflow
+# Install Streamlit and other Python dependencies
+RUN pip install --no-cache-dir \
+    streamlit \
+    pandas \
+    numpy \
+    matplotlib
 
 # Use the default Airflow entrypoint
 ENTRYPOINT ["/entrypoint"]
 
-# Set the default command to run Airflow's webserver (adjust if needed)
-CMD ["webserver"]
+# Set the default command to run Streamlit (or Airflow webserver, adjust as needed)
+CMD ["streamlit", "run", "main.py"]

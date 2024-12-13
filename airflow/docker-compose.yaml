@@ -6,7 +6,7 @@ services:
     #image: apache/airflow:2.7.1
     container_name: airflow-init
     #command: bash -c "airflow db init"
-    command: bash -c "airflow db migrate && airflow users create \
+    command: bash -c "pip install streamlit && airflow db migrate && airflow users create \
       --username airflow \
       --password airflow \
       --firstname airflow \
@@ -50,7 +50,8 @@ services:
       - ./plugins:/opt/airflow/plugins
       - ../star_schema.db:/data/star_schema.db
       - ../movie_data:/opt/movie_data
-    command: ["airflow", "webserver"]
+    #command: ["airflow", "webserver"]
+    command: bash -c "pip install streamlit && airflow webserver"
 
   airflow-scheduler:
     build:
@@ -111,8 +112,27 @@ services:
     volumes:
       - ../star_schema.db:/data/star_schema.db
       - ../movie_data:/opt/movie_data
+    command: bash -c "pip install streamlit && airflow webserver"
     stdin_open: true
     tty: true
+
+  streamlit:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: streamlit
+    depends_on:
+      - airflow-init
+      - airflow-webserver
+    ports:
+      - "8501:8501"
+    volumes:
+      #- ../main.py:/opt/airflow/dags/streamlit/main.py
+      - ../streamlit:/opt/airflow/dags/streamlit
+
+    command: bash -c "pip install streamlit && pwd && cd dags && pwd && cd streamlit && pwd && streamlit run main.py && airflow webserver"
+    #command: ["streamlit", "run", "/opt/airflow/dags/streamlit/main.py"]
+
 
   airflow-worker:
     build:
@@ -145,3 +165,4 @@ volumes:
   airflow_plugins:
   redis_data:
   duckdb_data:
+  streamlit_data:

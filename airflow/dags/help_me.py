@@ -1,14 +1,19 @@
+'''
 import streamlit as st
 import pandas as pd
 import numpy as np
+from airflow import DAG
+from airflow.operators.python import PythonOperator
+import duckdb
+from datetime import datetime, timedelta
 #from st_aggrid import AgGrid, GridOptionsBuilder, JsCode #(pip install streamlit-aggrid)
 
-st.image("camera.png")
-st.title('Trends in Cinema')
+#st.image("camera.png")
+#st.title('Trends in Cinema')
 
 def load_data():
     # Connect to the DuckDB database
-    conn = duckdb.connect(database="stra_schema.db", read_only=True)
+    conn = duckdb.connect(database="star_schema.db")
 
     # Write the query to fetch the data
     query = """
@@ -188,7 +193,7 @@ else:
 
 # Define the DAG
 with DAG(
-        dag_id="cinema_trends_pipeline",
+        dag_id="SSSScinema_trends_pipeline",
         schedule_interval=None,  # Manual trigger
         start_date=datetime(2024, 1, 1),
         catchup=False
@@ -203,8 +208,8 @@ with DAG(
     # Task to filter and sort data
     filter_and_sort_task = PythonOperator(
         task_id="filter_and_sort_data",
-        python_callable=filter_and_sort_data
+        python_callable=load_data #filter_and_sort_data2
     )
 
     # Define task dependencies
-    load_data_task >> filter_and_sort_task
+    load_data_task >> filter_and_sort_task'''
