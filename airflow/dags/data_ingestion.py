@@ -32,20 +32,7 @@ def preprocess_movielens(movielens):
     movies_data = []
     ratings_data = []
 
-    title_release_regex = re.compile(r"^(.*)\s\((\d{4})\)$")
-
     for movie in movielens:
-
-        title_release = re.match(title_release_regex, movie["movie"])
-
-        if title_release:
-            title = title_release.group(1)
-            release_year = int(title_release.group(2))
-        else:
-            title = movie["movie"]
-            release_year = None
-
-        #genres = movie['details'].replace("Genres: ", "").split(", ")
         external_links = movie['external_links']
         imdb_id = external_links.split(", ")[0].replace("IMDB ID: ", "")
         tmdb_id = external_links.split(", ")[1].replace("TMDB ID: ", "")
@@ -53,9 +40,6 @@ def preprocess_movielens(movielens):
 
         movies_data.append({
             "movieId": movie_id,
-        #    "title": title,
-        #    "release_year": release_year,
-        #    "genres": genres,
             "imdbId": imdb_id,
             "tmdbId": tmdb_id
         })
@@ -67,19 +51,16 @@ def preprocess_movielens(movielens):
                 rating = float(parts[0].replace("Rated ", ""))
                 user_parts = parts[1].split(" at ")
                 user_id = user_parts[0]
-                #timestamp = user_parts[1]
 
                 ratings_data.append({
                     "user_id": user_id,
                     "movieId": movie_id,
-                    "rating": rating,
-                #    "timestamp": timestamp
+                    "rating": rating
                 })
 
     movies = pd.DataFrame(movies_data)
     ratings = pd.DataFrame(ratings_data)
-    
-    # ratings['timestamp'] = pd.to_numeric(ratings['timestamp'], errors='coerce', downcast='integer')
+
     ratings['user_id'] = pd.to_numeric(ratings['user_id'], errors='coerce', downcast='integer')
 
     movies['imdbId'] = pd.to_numeric(movies['imdbId'], errors='coerce', downcast='integer')
@@ -121,12 +102,10 @@ def preprocess_movies(tmdb):
     tmdb['genres'] = tmdb['genres'].apply(extract_keywords, args=('name',))
     
     tmdb["production_companies"] = tmdb["production_companies"].apply(extract_keywords, args=('name',))
-    #tmdb['production_countries_iso'] = tmdb['production_countries'].apply(extract_keywords, args=('iso_3166_1',))
     tmdb['production_countries'] = tmdb['production_countries'].apply(extract_keywords, args=('name',))
-    
-    #tmdb['spoken_languages_iso'] = tmdb['spoken_languages'].apply(extract_keywords, args=('iso_639_1',))
+
     tmdb['spoken_languages'] = tmdb['spoken_languages'].apply(extract_keywords, args=('name',))
-    
+
     tmdb['release_date'] = pd.to_datetime(tmdb['release_date'], errors='coerce')
     
     tmdb['budget'] = pd.to_numeric(tmdb['budget'], errors='coerce', downcast='integer')
@@ -149,7 +128,7 @@ def preprocess_cast_crew(credits):
         crew = json.loads(movie["crew"])
         movie_id = movie["movie_id"]
 
-        for count, actor in enumerate(cast): # REMOVE
+        for actor in cast:
             cast_df.append({
                 "tmdbId": movie_id,
                 "name": actor["name"],
@@ -157,10 +136,7 @@ def preprocess_cast_crew(credits):
                 "gender": "F" if actor["gender"] == 1 else "M"
             })
 
-            if count > 10:
-                break
-
-        added_jobs = ["Director", "Director of Photography", "Visual Effects Supervisor"] # REMOVE
+        added_jobs = ["Director"] # Only directors are included, otherwise loading crew data takes a very long time
         for member in crew:
             if member["job"] in added_jobs:
                 crew_df.append({
@@ -181,7 +157,6 @@ def date_table(movies, **kwargs):
     holiday_df_data = []
 
     for _, row in movies.iterrows():
-        #movie_id = row["id"]
         movie_id = row["tmdbId"]
         date = row["release_date"]
 
