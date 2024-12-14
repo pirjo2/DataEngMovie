@@ -3,6 +3,15 @@ Authors: Anna Maria Tammin, Maria Anett Kaha, Pirjo Vainjärv
 
 The aim of this project is to analyze and filter movies based on ratings and other attributes. This application helps users to filter out the highest-rated movies to discover and watch or filter out the best matches for users' desires. Also, if users want to watch the lowest-rated movies, then this application helps to filter them out.
 
+Questions we were trying to answer were:
+1. Are high budget movies on average rated higher than low budget movies?
+2. Are mostly female cast/ crew movies rated higher or lower than mostly male crew/ cast movies?
+3. What actor has participated in the most high-rated movies (movies with a rating of 4 or higher)?
+4. Which director has on average the highest rated movies?
+5. Which season has the highest rated movies?
+
+(Answers to these questions are on the Streamlit application).
+
 ### Source datasets:
 [Movielens (Small)](https://grouplens.org/datasets/movielens/latest/) <br>
 [TMDB 5000](https://www.kaggle.com/datasets/tmdb/tmdb-movie-metadata/data?select=tmdb_5000_movies.csv)
