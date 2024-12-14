@@ -1,11 +1,12 @@
 import json
 import pandas as pd
-import re
 import os
 
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from datetime import datetime
+
+from airflow.operators.trigger_dagrun import TriggerDagRunOperator
 
 def ingest_movielens(**kwargs):
     with open('../movie_data/raw_unstructured_data.json', 'r') as f:
@@ -253,5 +254,10 @@ with DAG(
         provide_context=True,
     )
 
+    trigger_schema_creation = TriggerDagRunOperator(
+        task_id='trigger_schema_creation',
+        trigger_dag_id='create_star_schema_duckdb',
+    )
+
     # Task dependencies
-    [ingest_movielens_task, ingest_tmdb_task, ingest_users_task] >> process_data_task
+    [ingest_movielens_task, ingest_tmdb_task, ingest_users_task] >> process_data_task >> trigger_schema_creation
