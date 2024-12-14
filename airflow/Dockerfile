@@ -18,7 +18,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     rm -rf /var/lib/apt/lists/*
 
 
-
 # Install DuckDB CLI based on architecture
 RUN arch=$(dpkg --print-architecture) && \
     if [ "$arch" = "amd64" ]; then \
@@ -34,11 +33,6 @@ RUN arch=$(dpkg --print-architecture) && \
     rm duckdb.zip
 
 USER airflow
-
-RUN python -m ensurepip && pip install --upgrade pip && \
-    pip install --no-cache-dir --index-url=https://pypi.org/simple \
-    duckdb 'pyarrow<10.1.0,>=10.0.1' azure-storage-common apache-airflow-providers-google[all]
-
 
 # Install DuckDB Python package
  RUN pip install --no-cache-dir duckdb

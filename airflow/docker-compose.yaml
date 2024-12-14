@@ -45,7 +45,7 @@ services:
       - ./dags:/opt/airflow/dags
       - ./logs:/opt/airflow/logs
       - ./plugins:/opt/airflow/plugins
-      - ../star_schema.db:/data/star_schema.db
+      - ../star_schema.db:/star_schema.db
       - ../movie_data:/opt/movie_data
     command: ["airflow", "webserver"]
 
@@ -68,7 +68,7 @@ services:
       - ./dags:/opt/airflow/dags
       - ./logs:/opt/airflow/logs
       - ./plugins:/opt/airflow/plugins
-      - ../star_schema.db:/data/star_schema.db
+      - ../star_schema.db:/star_schema.db
       - ../movie_data:/opt/movie_data
     command: ["airflow", "scheduler"]
 
@@ -93,23 +93,6 @@ services:
       - redis_data:/data
     command: [ "redis-server", "--appendonly", "yes" ]
 
-  duckdb:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: duckdb
-    depends_on:
-      - airflow-init
-      - postgres
-      - redis
-    environment:
-      - DUCKDB_PATH=/data/star_schema.db
-    volumes:
-      - ../star_schema.db:/data/star_schema.db
-      - ../movie_data:/opt/movie_data
-    stdin_open: true
-    tty: true
-
   airflow-worker:
     build:
       context: .
@@ -132,7 +115,7 @@ services:
       - ./streamlit:/opt/airflow/streamlit
       - ./logs:/opt/airflow/logs
       - ./plugins:/opt/airflow/plugins
-      - ../star_schema.db:/data/star_schema.db
+      - ../star_schema.db:/star_schema.db
       - ../movie_data:/opt/movie_data
     command: ["airflow", "celery", "worker"]
 
