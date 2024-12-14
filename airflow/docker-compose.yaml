@@ -41,7 +41,7 @@ services:
       - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow
       - AIRFLOW__CELERY__BROKER_URL=redis://redis:6379/0
       - AIRFLOW__CELERY__RESULT_BACKEND=db+postgresql://airflow:airflow@postgres/airflow
-      - DUCKDB_PATH=/data/star_schema.db
+      - DUCKDB_PATH=/mnt/streamlit/star_schema.db
     ports:
       - "8081:8080"
     volumes:
@@ -68,7 +68,7 @@ services:
       - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow
       - AIRFLOW__CELERY__BROKER_URL=redis://redis:6379/0
       - AIRFLOW__CELERY__RESULT_BACKEND=db+postgresql://airflow:airflow@postgres/airflow
-      - DUCKDB_PATH=/data/star_schema.db
+      - DUCKDB_PATH=/mnt/streamlit/star_schema.db
     volumes:
       - ./dags:/opt/airflow/dags
       - ./logs:/opt/airflow/logs
@@ -108,7 +108,8 @@ services:
       - postgres
       - redis
     environment:
-      - DUCKDB_PATH=/data/star_schema.db
+      - DUCKDB_PATH=/mnt/streamlit/star_schema.db
+
     volumes:
       - ../star_schema.db:/data/star_schema.db
       - ../movie_data:/opt/movie_data
@@ -129,6 +130,9 @@ services:
     volumes:
       #- ../main.py:/opt/airflow/dags/streamlit/main.py
       - ../streamlit:/opt/airflow/dags/streamlit
+      - duckdb_data:/mnt/streamlit
+    environment:
+      - AIRFLOW_CONN_DUCKDB=duckdb:///mnt/streamlit/star_schema.db
 
     command: bash -c "pip install streamlit && pwd && cd dags && pwd && cd streamlit && pwd && streamlit run main.py && airflow webserver"
     #command: ["streamlit", "run", "/opt/airflow/dags/streamlit/main.py"]
@@ -149,7 +153,7 @@ services:
       - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow
       - AIRFLOW__CELERY__BROKER_URL=redis://redis:6379/0
       - AIRFLOW__CELERY__RESULT_BACKEND=db+postgresql://airflow:airflow@postgres/airflow
-      - DUCKDB_PATH=/data/star_schema.db
+      - DUCKDB_PATH=/mnt/streamlit/star_schema.db
     volumes:
       - ./dags:/opt/airflow/dags
       - ./logs:/opt/airflow/logs

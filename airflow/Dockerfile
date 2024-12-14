@@ -9,15 +9,24 @@ USER root
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    procps \
     software-properties-common \
     build-essential \
     curl \
     ca-certificates \
     unzip \
+    #python3.12 \
+    #python3.12-venv \
+    #python3.12-distutils && \
+    #ln -sf /usr/bin/python3.12 /usr/bin/python3 && \
+    #ln -sf /usr/bin/python3.12 /usr/bin/python && \
+    #rm -rf /var/lib/apt/lists/*
     python3-venv \
     python3-distutils && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
+
+
 
 # Install DuckDB CLI based on architecture
 RUN arch=$(dpkg --print-architecture) && \

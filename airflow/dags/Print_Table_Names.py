@@ -2,14 +2,17 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 import duckdb
 from datetime import datetime, timedelta
+import os
 
 # Function to fetch and print table names
-def print_table_names():
+def print_table_names(database=None):
     try:
-        # Connect to the DuckDB database
-        conn = duckdb.connect(database="star_schema.db")
+        # Fetch database path from environment variable if not provided
+        if not database:
+            database = './star_schema2.db'
 
-
+        # Connect to DuckDB
+        conn = duckdb.connect(database=database, read_only=False)
 
         # Fetch all table names
         result = conn.execute("SHOW TABLES;").fetchall()
