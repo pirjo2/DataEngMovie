@@ -5,7 +5,7 @@ import pandas as pd
 st.image("camera.png")
 st.title('Trends in Cinema')
 
-#@st.cache_data
+@st.cache_data
 def load_data():
     conn = duckdb.connect(database="/opt/airflow/star_schema.db", read_only=True)
     query = """
@@ -171,7 +171,22 @@ if st.button("Show/Hide Filters"):
     st.session_state.show_filters = not st.session_state.show_filters
 
 # FILTERS SELECTION
+filtered_data = data.copy()
+
 filters_applied = False
+
+age_limit = []
+directors = []
+genres = []
+keywords = []
+release_year_range = [1916, 2016]
+rating_filter = [0.00, 5.00]
+apply_release_year = True
+apply_rating = True
+apply_age_limit = False
+apply_director = False
+apply_genre = False
+apply_keyword = False
 if st.session_state.show_filters:
     st.subheader("Filters")
 
@@ -186,9 +201,9 @@ if st.session_state.show_filters:
         filters_applied = True
         release_year_range = st.slider(
             "Release Year",
-            int(data["release_date"].min().year),
-            int(data["release_date"].max().year),
-            (int(data["release_date"].min().year), int(data["release_date"].max().year))
+            int(filtered_data["release_date"].min().year),
+            int(filtered_data["release_date"].max().year),
+            (int(filtered_data["release_date"].min().year), int(filtered_data["release_date"].max().year))
         )
 
     if apply_rating:
@@ -197,27 +212,19 @@ if st.session_state.show_filters:
 
     if apply_age_limit:
         filters_applied = True
-        age_limit = st.multiselect("Age limit", data["age_limit"].unique())
-    else:
-        age_limit = []
+        age_limit = st.multiselect("Age limit", filtered_data["age_limit"].unique())
 
     if apply_director:
         filters_applied = True
-        directors = st.multiselect("Director",  data["director_name"].unique())
-    else:
-        directors = []
+        directors = st.multiselect("Director",  filtered_data["director_name"].unique())
 
     if apply_genre:
         filters_applied = True
-        genres = st.multiselect("Genre", data[["genre1", "genre2", "genre3"]].apply(lambda row: row.dropna().tolist(), axis=1).explode().unique())
-    else:
-        genres = []
+        genres = st.multiselect("Genre", filtered_data[["genre1", "genre2", "genre3"]].apply(lambda row: row.dropna().tolist(), axis=1).explode().unique())
 
     if apply_keyword:
         filters_applied = True
-        keywords = st.multiselect("Keyword", data[["keyword1", "keyword2", "keyword3"]].apply(lambda row: row.dropna().tolist(), axis=1).explode().unique())
-    else:
-        keywords = []
+        keywords = st.multiselect("Keyword", filtered_data[["keyword1", "keyword2", "keyword3"]].apply(lambda row: row.dropna().tolist(), axis=1).explode().unique())
 
 # MOVIE SORTING
 sort_option = st.selectbox("Sort", ["Select...", "Rating (Highest-Lowest)",
@@ -225,40 +232,39 @@ sort_option = st.selectbox("Sort", ["Select...", "Rating (Highest-Lowest)",
                                     "Alphabetical (Z-A)", "Release Year (Newest-Oldest)",
                                     "Release Year (Oldest-Newest)"])
 
-filtered_data = data.head(30)
 # FILTERS
 if st.session_state.show_filters:
     if apply_release_year:
-        filtered_data = data[
-            (data["release_date"].dt.year >= release_year_range[0]) &
-            (data["release_date"].dt.year <= release_year_range[1])
-            ].head(30)
+        filtered_data = filtered_data[
+            (filtered_data["release_date"].dt.year >= release_year_range[0]) &
+            (filtered_data["release_date"].dt.year <= release_year_range[1])
+            ]
 
     if apply_rating:
-        filtered_data = data[
-            (data["avg_rating"] >= rating_filter[0]) &
-            (data["avg_rating"] <= rating_filter[1])
-            ].head(30)
+        filtered_data = filtered_data[
+            (filtered_data["avg_rating"] >= rating_filter[0]) &
+            (filtered_data["avg_rating"] <= rating_filter[1])
+            ]
 
     if apply_age_limit and age_limit:
-        filtered_data = data[data["age_limit"].isin(age_limit)].head(30)
+        filtered_data = filtered_data[filtered_data["age_limit"].isin(age_limit)]
 
     if apply_genre and genres:
-        filtered_data = data[
-            data["genre1"].isin(genres) |
-            data["genre2"].isin(genres) |
-            data["genre3"].isin(genres)
-            ].head(30)
+        filtered_data = filtered_data[
+            filtered_data["genre1"].isin(genres) |
+            filtered_data["genre2"].isin(genres) |
+            filtered_data["genre3"].isin(genres)
+            ]
 
     if apply_director and directors:
-        filtered_data = data[data["director_name"].isin(directors)].head(30)
+        filtered_data = filtered_data[filtered_data["director_name"].isin(directors)]
 
     if apply_keyword and keywords:
-        filtered_data = data[
-            data["genre1"].isin(keywords) |
-            data["genre2"].isin(keywords) |
-            data["genre3"].isin(keywords)
-            ].head(30)
+        filtered_data = filtered_data[
+            filtered_data["keyword1"].isin(keywords) |
+            filtered_data["keyword2"].isin(keywords) |
+            filtered_data["keyword3"].isin(keywords)
+            ]
 
 # REMOVE GENRES AND MAKE ONE COLUMN
 filtered_data["genre1"] = filtered_data["genre1"].astype(str)
@@ -267,15 +273,14 @@ filtered_data["genre3"] = filtered_data["genre3"].astype(str)
 
 genres = []
 cols = ['genre1', 'genre2', 'genre3']
-for i in range(len(filtered_data)):
+for i in filtered_data.index:
     genre = []
     for col in cols:
         if filtered_data.loc[i, col] != "None":
             genre.append(filtered_data.loc[i, col])
     genres.append(", ".join(genre).replace("[", "").replace("]", "").replace("'", "") if len(genre) > 0 else None)
 
-filtered_data["genre"] = genres
-filtered_data = filtered_data.drop(['genre1', 'genre2', 'genre3'], axis=1)
+filtered_data["Genre"] = genres
 
 # REMOVE KEYWORDS AND MAKE ONE COLUMN
 filtered_data["keyword1"] = filtered_data["keyword1"].astype(str)
@@ -284,52 +289,32 @@ filtered_data["keyword3"] = filtered_data["keyword3"].astype(str)
 
 kws = []
 cols = ['keyword1', 'keyword2', 'keyword3']
-for i in range(len(filtered_data)):
+for i in filtered_data.index:
     kw = []
     for col in cols:
         if filtered_data.loc[i, col] != "None":
             kw.append(filtered_data.loc[i, col])
     kws.append(", ".join(kw).replace("[", "").replace("]", "").replace("'", "") if len(kw) > 0 else None)
 
-filtered_data["keywords"] = kws
-filtered_data = filtered_data.drop(['keyword1', 'keyword2', 'keyword3'], axis=1)
+filtered_data["Keywords"] = kws
 
 # REMOVE CATEGORYS AND MAKE ONE COLUMN
 categories = []
 cols = ['is_christmas', 'is_new_year', 'is_summer', 'is_thanksgiving', 'is_halloween', 'is_valentines', 'is_spring']
-for i in range(len(filtered_data)):
+for i in filtered_data.index:
     category = []
     for col in cols:
         if filtered_data.loc[i,col] == 1:
             category.append(col.replace("is_", ""))
     categories.append(", ".join(category) if len(category) > 0 else None)
 
-filtered_data['category'] = categories
-filtered_data = filtered_data.drop(['is_christmas', 'is_new_year', 'is_summer', 'is_thanksgiving', 'is_halloween', 'is_valentines', 'is_spring'], axis=1)
-
-# REMOVE MOVIE ID
-filtered_data = filtered_data.drop("movie_id", axis=1)
-
-# REMOVE RUN TIME
-filtered_data = filtered_data.drop("run_time", axis=1)
-
-# REMOVE BUDGET
-filtered_data = filtered_data.drop("high_budget", axis=1)
-
-# REMOVE PROD COMPANY
-filtered_data = filtered_data.drop("prod_company", axis=1)
-
-# REMOVE PROD COUNTRY
-filtered_data = filtered_data.drop("prod_country", axis=1)
-
-# REMOVE LANGUAGE
-filtered_data = filtered_data.drop("original_lang", axis=1)
+filtered_data['Category'] = categories
 
 # SORTING
 if sort_option == "Rating (Highest-Lowest)":
-    filtered_data = filtered_data.sort_values("rating_value", ascending=False)
+    filtered_data = filtered_data.sort_values("avg_rating", ascending=False)
 elif sort_option == "Rating (Lowest-Highest)":
-    filtered_data = filtered_data.sort_values("rating_value", ascending=True)
+    filtered_data = filtered_data.sort_values("avg_rating", ascending=True)
 elif sort_option == "Alphabetical (A-Z)":
     filtered_data = filtered_data.sort_values("title", ascending=True)
 elif sort_option == "Alphabetical (Z-A)":
@@ -356,9 +341,32 @@ st.html("""
     </style>
     """
         )
+
+final_copy = filtered_data.copy()
+
+final_copy = final_copy.drop(['genre1', 'genre2', 'genre3'], axis=1)
+final_copy = final_copy.drop(['keyword1', 'keyword2', 'keyword3'], axis=1)
+final_copy = final_copy.drop(['is_christmas', 'is_new_year', 'is_summer', 'is_thanksgiving', 'is_halloween', 'is_valentines', 'is_spring'], axis=1)
+final_copy = final_copy.drop("movie_id", axis=1)
+final_copy = final_copy.drop("run_time", axis=1)
+final_copy = final_copy.drop("high_budget", axis=1)
+final_copy = final_copy.drop("prod_company", axis=1)
+final_copy = final_copy.drop("prod_country", axis=1)
+final_copy = final_copy.drop("original_lang", axis=1)
+
+# CHANGE COLUMN NAMES
+final_copy.rename(columns={
+    'title' : 'Title',
+    "overview" : "Overview",
+    "release_date" : "Release Date",
+    "age_limit" : "Age Limit",
+    "director_name" : "Director",
+    "avg_rating" : "Rating"
+}, inplace=True)
+
 # SHOWS REQUESTED MOVIES
 st.subheader("Movies")
-if filtered_data.empty:
+if final_copy.empty:
     st.write("No movies found with the selected filters.")
 else:
-    st.markdown(filtered_data.style.hide(axis="index").to_html(), unsafe_allow_html=True)
+    st.markdown(final_copy.head(30).style.hide(axis="index").to_html(), unsafe_allow_html=True)
