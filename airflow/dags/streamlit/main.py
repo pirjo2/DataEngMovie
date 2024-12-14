@@ -9,7 +9,7 @@ st.title('Trends in Cinema')
 def load_data():
     conn = duckdb.connect(database="/opt/airflow/star_schema.db", read_only=True)
     query = """
-        SELECT 
+    SELECT 
         m.id AS movie_id,
         m.title,
         m.original_lang,
@@ -19,7 +19,7 @@ def load_data():
         g.age_limit, g.genre1, g.genre2, g.genre3,
         k.keyword1, k.keyword2, k.keyword3,
         c.name AS director_name,
-        sf.rating_value,
+        AVG(sf.rating_value) AS avg_rating,
         sf.run_time,
         sf.high_budget,
         sf.prod_company,
@@ -31,15 +31,31 @@ def load_data():
     LEFT JOIN Keyword_dimension k ON sf.keyword_ID = k.id
     LEFT JOIN Crew_dimension c ON sf.crew_ID = c.id
     LEFT JOIN Search_Crew_bridge scb ON sf.crew_ID = scb.crewmate_ID AND scb.job = 'Director'
-    LIMIT 10;
+    GROUP BY 
+        m.id,
+        m.title,
+        m.original_lang,
+        m.overview,
+        d.release_date,
+        d.is_christmas, d.is_new_year, d.is_summer, d.is_spring, d.is_thanksgiving, d.is_halloween, d.is_valentines,
+        g.age_limit, g.genre1, g.genre2, g.genre3,
+        k.keyword1, k.keyword2, k.keyword3,
+        c.name,
+        sf.run_time,
+        sf.high_budget,
+        sf.prod_company,
+        sf.prod_country
+    ORDER BY 
+        avg_rating DESC
+    ;
     """
     #LEFT JOIN Search_Cast_bridge scb2 ON sf.cast_ID = scb2.actor_ID
     #LEFT JOIN Cast_dimension cd ON scb2.actor_ID = cd.id
-    result = conn.execute(query).fetch_df()
+    query_result = conn.execute(query).fetch_df()
 
-    result['release_date'] = pd.to_datetime(result['release_date'], errors='coerce')  # Convert to datetime
+    query_result['release_date'] = pd.to_datetime(query_result['release_date'], errors='coerce')  # Convert to datetime
 
-    return result
+    return query_result
 
 data = load_data()
 
@@ -89,28 +105,31 @@ if st.session_state.show_questions:
     LIMIT 100;
 
     """
-    result = execute_query(query_2)
+    result = execute_query(query_2)[0][0]
     st.markdown("**Query Result:**")
     st.write(result)
 
     st.write("3: Which director has on average the highest rated movies?")
     query_3 = """
     SELECT 
-        MD.title AS movie_title,
-        AVG(SF.rating_value) AS avg_rating
+    CRD.name AS director_name, 
+    AVG(SF.rating_value) AS avg_rating
     FROM 
         Search_fact SF
     JOIN 
-        Movie_dimension MD ON SF.movie_ID = MD.id
+        Search_Crew_bridge SCB ON SF.crew_ID = SCB.crewmate_ID
+    JOIN 
+        Crew_dimension CRD ON SCB.crewmate_ID = CRD.id
     WHERE 
-        SF.rating_value IS NOT NULL
+        SCB.job = 'Director' 
+        AND SF.rating_value IS NOT NULL
     GROUP BY 
-        SF.movie_ID
+        CRD.name
     ORDER BY 
         avg_rating DESC
-    LIMIT 4;
+    LIMIT 1;
     """
-    result = execute_query(query_3)
+    result = execute_query(query_3)[0][0]
     st.markdown("**Query Result:**")
     st.write(result)
 
@@ -140,7 +159,7 @@ if st.session_state.show_questions:
         avg_rating DESC
     LIMIT 1;
     """
-    result = execute_query(query_4)
+    result = execute_query(query_4)[0][0]
     st.markdown("**Query Result:**")
     st.write(result)
 
@@ -196,7 +215,7 @@ if st.session_state.show_filters:
 
     if apply_keyword:
         filters_applied = True
-        keywords = st.multiselect("Tag", data[["keyword1", "keyword2", "keyword3"]].apply(lambda row: row.dropna().tolist(), axis=1).explode().unique())
+        keywords = st.multiselect("Keyword", data[["keyword1", "keyword2", "keyword3"]].apply(lambda row: row.dropna().tolist(), axis=1).explode().unique())
     else:
         keywords = []
 
@@ -206,41 +225,105 @@ sort_option = st.selectbox("Sort", ["Select...", "Rating (Highest-Lowest)",
                                     "Alphabetical (Z-A)", "Release Year (Newest-Oldest)",
                                     "Release Year (Oldest-Newest)"])
 
-filtered_data = data.copy()
-
+filtered_data = data.head(30)
 # FILTERS
 if st.session_state.show_filters:
     if apply_release_year:
-        filtered_data = filtered_data[
-            (filtered_data["release_date"].dt.year >= release_year_range[0]) &
-            (filtered_data["release_date"].dt.year <= release_year_range[1])
-            ]
+        filtered_data = data[
+            (data["release_date"].dt.year >= release_year_range[0]) &
+            (data["release_date"].dt.year <= release_year_range[1])
+            ].head(30)
 
     if apply_rating:
-        filtered_data = filtered_data[
-            (filtered_data["rating_value"] >= rating_filter[0]) &
-            (filtered_data["rating_value"] <= rating_filter[1])
-            ]
+        filtered_data = data[
+            (data["avg_rating"] >= rating_filter[0]) &
+            (data["avg_rating"] <= rating_filter[1])
+            ].head(30)
 
     if apply_age_limit and age_limit:
-        filtered_data = filtered_data[filtered_data["age_limit"].isin(age_limit)]
+        filtered_data = data[data["age_limit"].isin(age_limit)].head(30)
 
     if apply_genre and genres:
-        filtered_data = filtered_data[
-            filtered_data["genre1"].isin(genres) |
-            filtered_data["genre2"].isin(genres) |
-            filtered_data["genre3"].isin(genres)
-            ]
+        filtered_data = data[
+            data["genre1"].isin(genres) |
+            data["genre2"].isin(genres) |
+            data["genre3"].isin(genres)
+            ].head(30)
 
     if apply_director and directors:
-        filtered_data = filtered_data[filtered_data["director_name"].isin(directors)]
+        filtered_data = data[data["director_name"].isin(directors)].head(30)
 
     if apply_keyword and keywords:
-        filtered_data = filtered_data[
-            filtered_data["genre1"].isin(keywords) |
-            filtered_data["genre2"].isin(keywords) |
-            filtered_data["genre3"].isin(keywords)
-            ]
+        filtered_data = data[
+            data["genre1"].isin(keywords) |
+            data["genre2"].isin(keywords) |
+            data["genre3"].isin(keywords)
+            ].head(30)
+
+# REMOVE GENRES AND MAKE ONE COLUMN
+filtered_data["genre1"] = filtered_data["genre1"].astype(str)
+filtered_data["genre2"] = filtered_data["genre2"].astype(str)
+filtered_data["genre3"] = filtered_data["genre3"].astype(str)
+
+genres = []
+cols = ['genre1', 'genre2', 'genre3']
+for i in range(len(filtered_data)):
+    genre = []
+    for col in cols:
+        if filtered_data.loc[i, col] != "None":
+            genre.append(filtered_data.loc[i, col])
+    genres.append(", ".join(genre).replace("[", "").replace("]", "").replace("'", "") if len(genre) > 0 else None)
+
+filtered_data["genre"] = genres
+filtered_data = filtered_data.drop(['genre1', 'genre2', 'genre3'], axis=1)
+
+# REMOVE KEYWORDS AND MAKE ONE COLUMN
+filtered_data["keyword1"] = filtered_data["keyword1"].astype(str)
+filtered_data["keyword2"] = filtered_data["keyword2"].astype(str)
+filtered_data["keyword3"] = filtered_data["keyword3"].astype(str)
+
+kws = []
+cols = ['keyword1', 'keyword2', 'keyword3']
+for i in range(len(filtered_data)):
+    kw = []
+    for col in cols:
+        if filtered_data.loc[i, col] != "None":
+            kw.append(filtered_data.loc[i, col])
+    kws.append(", ".join(kw).replace("[", "").replace("]", "").replace("'", "") if len(kw) > 0 else None)
+
+filtered_data["keywords"] = kws
+filtered_data = filtered_data.drop(['keyword1', 'keyword2', 'keyword3'], axis=1)
+
+# REMOVE CATEGORYS AND MAKE ONE COLUMN
+categories = []
+cols = ['is_christmas', 'is_new_year', 'is_summer', 'is_thanksgiving', 'is_halloween', 'is_valentines', 'is_spring']
+for i in range(len(filtered_data)):
+    category = []
+    for col in cols:
+        if filtered_data.loc[i,col] == 1:
+            category.append(col.replace("is_", ""))
+    categories.append(", ".join(category) if len(category) > 0 else None)
+
+filtered_data['category'] = categories
+filtered_data = filtered_data.drop(['is_christmas', 'is_new_year', 'is_summer', 'is_thanksgiving', 'is_halloween', 'is_valentines', 'is_spring'], axis=1)
+
+# REMOVE MOVIE ID
+filtered_data = filtered_data.drop("movie_id", axis=1)
+
+# REMOVE RUN TIME
+filtered_data = filtered_data.drop("run_time", axis=1)
+
+# REMOVE BUDGET
+filtered_data = filtered_data.drop("high_budget", axis=1)
+
+# REMOVE PROD COMPANY
+filtered_data = filtered_data.drop("prod_company", axis=1)
+
+# REMOVE PROD COUNTRY
+filtered_data = filtered_data.drop("prod_country", axis=1)
+
+# REMOVE LANGUAGE
+filtered_data = filtered_data.drop("original_lang", axis=1)
 
 # SORTING
 if sort_option == "Rating (Highest-Lowest)":
@@ -257,7 +340,7 @@ elif sort_option == "Release Year (Oldest-Newest)":
     filtered_data = filtered_data.sort_values("release_date", ascending=True)
 
 # RATINGS WERE IN WRONG FORMAT
-filtered_data["rating_value"] = filtered_data["rating_value"].apply(lambda x: f"{x:.1f}")
+filtered_data["avg_rating"] = filtered_data["avg_rating"].apply(lambda x: f"{x:.1f}")
 
 
 # APP SIZE
