@@ -1,30 +1,21 @@
 # Use the official Apache Airflow image as the base
 FROM apache/airflow:2.7.1-python3.9
 
-# Set metadata about the authors
-LABEL authors="joelo"
-
 # Switch to root to install system dependencies and DuckDB CLI
 USER root
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    procps \
     software-properties-common \
     build-essential \
     curl \
     ca-certificates \
     unzip \
-    #python3.12 \
-    #python3.12-venv \
-    #python3.12-distutils && \
-    #ln -sf /usr/bin/python3.12 /usr/bin/python3 && \
-    #ln -sf /usr/bin/python3.12 /usr/bin/python && \
-    #rm -rf /var/lib/apt/lists/*
     python3-venv \
     python3-distutils && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
-
 
 
 # Install DuckDB CLI based on architecture
@@ -43,19 +34,16 @@ RUN arch=$(dpkg --print-architecture) && \
 
 USER airflow
 
-RUN python -m ensurepip && pip install --upgrade pip && \
-    pip install --no-cache-dir --index-url=https://pypi.org/simple \
-    duckdb 'pyarrow<10.1.0,>=10.0.1' azure-storage-common apache-airflow-providers-google[all]
-
-
 # Install DuckDB Python package
-RUN pip install --no-cache-dir duckdb
-RUN pip install duckdb
+ RUN pip install --no-cache-dir duckdb
+# RUN pip install duckdb
 
 RUN pip install --no-cache-dir redis
 
-# Switch back to the Airflow user to follow best practices
-#USER airflow
+RUN pip install --no-cache-dir \
+    pandas \
+    numpy \
+    matplotlib
 
 # Use the default Airflow entrypoint
 ENTRYPOINT ["/entrypoint"]

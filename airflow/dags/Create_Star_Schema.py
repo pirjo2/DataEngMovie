@@ -2,6 +2,7 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 import duckdb
 from datetime import datetime, timedelta
+from airflow.operators.trigger_dagrun import TriggerDagRunOperator
 
 # Function to execute SQL queries in DuckDB
 def execute_duckdb_query(query, database='star_schema.db'):
@@ -27,7 +28,7 @@ with DAG(
         dag_id='create_star_schema_duckdb',
         default_args=default_args,
         description='Create Star Schema Tables for the Movie Database using DuckDB',
-        schedule_interval=None,  # Manual execution
+        schedule_interval=None,
         start_date=datetime(2024, 12, 1),
         catchup=False,
 ) as dag:
@@ -196,6 +197,11 @@ with DAG(
         op_args=[create_search_fact_sql],
     )
 
+    trigger_data_loading = TriggerDagRunOperator(
+        task_id='trigger_data_loading',
+        trigger_dag_id='load_data_into_star_schema',
+    )
+
     # Set task dependencies
     (
             create_user_dimension
@@ -208,4 +214,5 @@ with DAG(
             >> create_search_cast_bridge
             >> create_date_dimension
             >> create_search_fact
+            >> trigger_data_loading
     )
