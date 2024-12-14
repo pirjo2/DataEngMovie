@@ -199,7 +199,7 @@ with DAG(
 
     trigger_data_loading = TriggerDagRunOperator(
         task_id='trigger_data_loading',
-        trigger_dag_id='load_data_to_star_schema',
+        trigger_dag_id='load_data_into_star_schema',
     )
 
     # Set task dependencies

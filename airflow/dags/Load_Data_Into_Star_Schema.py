@@ -325,6 +325,13 @@ with DAG(
         max_active_runs=1,
 ) as dag:
 
+    # Task to start Streamlit
+    load_data_task = PythonOperator(
+        task_id='load_data_to_star_schema',
+        python_callable=load_data_to_duckdb,
+        dag=dag,
+    )
+
     # Validation tasks
     validation_tasks = []
     for table_name, csv_path in CSV_FILE_PATHS.items():
@@ -335,13 +342,6 @@ with DAG(
             provide_context=True,
         )
         validation_tasks.append(task)
-
-    # Task to start Streamlit
-    load_data_task = PythonOperator(
-        task_id='load_data_to_star_schema',
-        python_callable=load_data_to_duckdb,
-        dag=dag,
-    )
 
     # Start_streamlit runs only after all validation tasks succeed
     load_data_task >> validation_tasks
