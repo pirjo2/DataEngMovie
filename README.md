@@ -1,7 +1,7 @@
 # Data Engineering course project: Trends in Cinema
 Authors: Anna Maria Tammin, Maria Anett Kaha, Pirjo Vainjärv
 
-The aim of this project is to analyze and filter movies based on ratings and other attributes.
+The aim of this project is to analyze and filter movies based on ratings and other attributes. This application helps users to filter out the highest-rated movies to discover and watch or filter out the best matches for users' desires. Also, if users want to watch the lowest-rated movies, then this application helps to filter them out.
 
 ### Source datasets:
 [Movielens (Small)](https://grouplens.org/datasets/movielens/latest/) <br>
