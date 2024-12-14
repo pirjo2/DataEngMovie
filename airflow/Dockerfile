@@ -9,6 +9,7 @@ USER root
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    procps \
     software-properties-common \
     build-essential \
     curl \
@@ -54,10 +55,10 @@ RUN pip install duckdb
 
 RUN pip install --no-cache-dir redis
 
-RUN pip install streamlit
-
-# Switch back to the Airflow user to follow best practices
-#USER airflow
+RUN pip install --no-cache-dir \
+    pandas \
+    numpy \
+    matplotlib
 
 # Use the default Airflow entrypoint
 ENTRYPOINT ["/entrypoint"]

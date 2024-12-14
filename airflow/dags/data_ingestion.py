@@ -149,22 +149,27 @@ def preprocess_cast_crew(credits):
         crew = json.loads(movie["crew"])
         movie_id = movie["movie_id"]
 
-    for actor in cast:
-        cast_df.append({
-            "tmdbId": movie_id,
-            "name": actor["name"],
-            "character": actor["character"],
-            "gender": "F" if actor["gender"] == 1 else "M"
-        })
+        for count, actor in enumerate(cast): # REMOVE
+            cast_df.append({
+                "tmdbId": movie_id,
+                "name": actor["name"],
+                "character": actor["character"],
+                "gender": "F" if actor["gender"] == 1 else "M"
+            })
 
-    for member in crew:
-        crew_df.append({
-        "tmdbId": movie_id,
-        "name": member["name"],
-        "job": member["job"],
-        "department": member["department"],
-        "gender": "F" if member["gender"] == 1 else "M"
-        })
+            if count > 10:
+                break
+
+        added_jobs = ["Director", "Director of Photography", "Visual Effects Supervisor"] # REMOVE
+        for member in crew:
+            if member["job"] in added_jobs:
+                crew_df.append({
+                "tmdbId": movie_id,
+                "name": member["name"],
+                "job": member["job"],
+                "department": member["department"],
+                "gender": "F" if member["gender"] == 1 else "M"
+                })
 
     cast_df = pd.DataFrame(cast_df)
     crew_df = pd.DataFrame(crew_df)
@@ -173,8 +178,6 @@ def preprocess_cast_crew(credits):
 
 
 def date_table(movies, **kwargs):
-    print(f"SIIIN")
-    print(movies.columns)
     holiday_df_data = []
 
     for _, row in movies.iterrows():

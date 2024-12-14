@@ -3,9 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    #image: apache/airflow:2.7.1
     container_name: airflow-init
-    #command: bash -c "airflow db init"
     command: bash -c "airflow db migrate && airflow users create \
       --username airflow \
       --password airflow \
@@ -29,7 +27,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    #image: apache/airflow:2.7.1
     container_name: airflow-webserver
     depends_on:
       - airflow-init
@@ -56,7 +53,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    #image: apache/airflow:2.7.1
     container_name: airflow-scheduler
     depends_on:
       - airflow-init
@@ -118,7 +114,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    #image: apache/airflow:2.7.1
     container_name: airflow-worker
     depends_on:
       - airflow-scheduler
@@ -130,8 +125,11 @@ services:
       - AIRFLOW__CELERY__BROKER_URL=redis://redis:6379/0
       - AIRFLOW__CELERY__RESULT_BACKEND=db+postgresql://airflow:airflow@postgres/airflow
       - DUCKDB_PATH=/data/star_schema.db
+    ports:
+      - "8051:8051"
     volumes:
       - ./dags:/opt/airflow/dags
+      - ./streamlit:/opt/airflow/streamlit
       - ./logs:/opt/airflow/logs
       - ./plugins:/opt/airflow/plugins
       - ../star_schema.db:/data/star_schema.db
