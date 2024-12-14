@@ -20,7 +20,7 @@ The first step is to download the tmdb_5000_movies.csv and tmdb_5000_credits.csv
 
 To run the application, run the following commands in order
 ```
-docker compose airflow-init
+docker compose airflow-init --remove-orphans
 ```
 If previous finished with code 0:
 ```
@@ -47,5 +47,15 @@ After this DAG, the rest of the DAGs ("create_star_schema_duckdb" -> "load_data_
 
 ### Starting Streamlit Application
 Run the DAG <b>"start_streamlit"</b> to run the Streamlit application.
+Streamlit is now running on localhost port 8051 and can be accessible from [http://localhost:8051/](http://localhost:8051/).
 
 <b> The "start_streamlit" DAG will continue running until Streamlit application is closed by triggering the "stop_streamlit" DAG.</b> Both DAG-s should finish successfully.
+
+## Closing the Application
+1. Trigger DAG "stop_streamlit" to stop Streamlit
+2. Use ctrl+C in terminal or stop the airflow container from Docker Desktop
+
+Additionally:
+```
+docker compose down
+```
