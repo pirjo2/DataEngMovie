@@ -6,6 +6,7 @@ USER root
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    procps \
     software-properties-common \
     build-essential \
     curl \
@@ -46,7 +47,6 @@ RUN python -m ensurepip && pip install --upgrade pip && \
 RUN pip install --no-cache-dir redis
 
 RUN pip install --no-cache-dir \
-    streamlit \
     pandas \
     numpy \
     matplotlib
