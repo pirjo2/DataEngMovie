@@ -48,7 +48,7 @@ services:
       - ./dags:/opt/airflow/dags
       - ./logs:/opt/airflow/logs
       - ./plugins:/opt/airflow/plugins
-      - ../star_schema.db:/data/star_schema.db
+      - ../star_schema.db:/star_schema.db
       - ../movie_data:/opt/movie_data
     #command: ["airflow", "webserver"]
     command: bash -c "pip install streamlit && airflow webserver"
@@ -73,7 +73,7 @@ services:
       - ./dags:/opt/airflow/dags
       - ./logs:/opt/airflow/logs
       - ./plugins:/opt/airflow/plugins
-      - ../star_schema.db:/data/star_schema.db
+      - ../star_schema.db:/star_schema.db
       - ../movie_data:/opt/movie_data
     command: ["airflow", "scheduler"]
 
@@ -111,7 +111,7 @@ services:
       - DUCKDB_PATH=/mnt/streamlit/star_schema.db
 
     volumes:
-      - ../star_schema.db:/data/star_schema.db
+      - ../star_schema.db:/star_schema.db
       - ../movie_data:/opt/movie_data
     command: bash -c "pip install streamlit && airflow webserver"
     stdin_open: true
@@ -158,7 +158,7 @@ services:
       - ./dags:/opt/airflow/dags
       - ./logs:/opt/airflow/logs
       - ./plugins:/opt/airflow/plugins
-      - ../star_schema.db:/data/star_schema.db
+      - ../star_schema.db:/star_schema.db
       - ../movie_data:/opt/movie_data
     command: ["airflow", "celery", "worker"]
 

@@ -4,7 +4,7 @@ import duckdb
 from datetime import datetime, timedelta
 
 # Function to execute SQL queries in DuckDB
-def execute_duckdb_query(query, database='star_schema.db'):
+def execute_duckdb_query(query, database='/opt/airflow/star_schema.db'):
     try:
         conn = duckdb.connect(database=database, read_only=False)
         conn.execute(query)
