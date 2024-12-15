@@ -16,7 +16,9 @@ Questions we were trying to answer were:
 [Movielens (Small)](https://grouplens.org/datasets/movielens/latest/) <br>
 [TMDB 5000](https://www.kaggle.com/datasets/tmdb/tmdb-movie-metadata/data?select=tmdb_5000_movies.csv)
 
-The Movielens dataset has been transformed into a semi-structured format for this project and additional randomly generated data was added.
+The Movielens dataset has been transformed into a semi-structured format for this project and additional randomly generated data was added. 
+We needed some attributes because otherwise, some star schema tables had only one attribute, for instance, we randomly generated users' age, nationality and gender. 
+Also, we transformed rating data into JSON format. We used Jupiter Notebook for generating synthetic data and transforming rating data.
 
 ### Star Schema
 ![drawSQL-image-export-2024-12-08](https://github.com/user-attachments/assets/e86916e8-46f6-437e-918a-25e94dafb686)
