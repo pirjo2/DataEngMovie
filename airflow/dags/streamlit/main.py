@@ -262,20 +262,26 @@ if st.session_state.show_filters:
 
     if apply_genre and genres:
         filtered_data = filtered_data[
-            filtered_data["genre1"].isin(genres) |
-            filtered_data["genre2"].isin(genres) |
-            filtered_data["genre3"].isin(genres)
-            ]
+            filtered_data.apply(
+                lambda row: all(
+                    genre in [row["genre1"], row["genre2"], row["genre3"]] for genre in genres
+                ),
+                axis=1
+            )
+        ]
 
     if apply_director and directors:
         filtered_data = filtered_data[filtered_data["director_name"].isin(directors)]
 
     if apply_keyword and keywords:
         filtered_data = filtered_data[
-            filtered_data["keyword1"].isin(keywords) |
-            filtered_data["keyword2"].isin(keywords) |
-            filtered_data["keyword3"].isin(keywords)
-            ]
+            filtered_data.apply(
+                lambda row: all(
+                    keyword in [row["keyword1"], row["keyword2"], row["keyword3"]] for keyword in keywords
+                ),
+                axis=1
+            )
+        ]
 
 # REMOVE GENRES AND MAKE ONE COLUMN
 filtered_data["genre1"] = filtered_data["genre1"].astype(str)
@@ -380,4 +386,6 @@ st.subheader("Movies")
 if final_copy.empty:
     st.write("No movies found with the selected filters.")
 else:
-    st.markdown(final_copy.head(30).style.hide(axis="index").to_html(), unsafe_allow_html=True)
+    st.markdown(final_copy.head(50).style.hide(axis="index").to_html(), unsafe_allow_html=True)
+
+st.write("Top 50 movies found have been displayed. Add filters for more specific results.")
