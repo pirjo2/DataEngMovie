@@ -1,9 +1,13 @@
 import streamlit as st
 import duckdb
 import pandas as pd
+import redis
+import json
 
 st.image("camera.png")
 st.title('Trends in Cinema')
+
+redis_client = redis.StrictRedis(host='redis', port=6379, db=0, decode_responses=True)
 
 @st.cache_data
 def load_data():
@@ -60,8 +64,16 @@ data = load_data()
 
 @st.cache_data
 def execute_query(query: str):
+    cached_result = redis_client.get(query)
+
+    if cached_result:
+        return json.loads(cached_result)
+
     conn = duckdb.connect(database="/opt/airflow/star_schema.db", read_only=True)
-    return conn.execute(query).fetchall()
+    result = conn.execute(query).fetchall()
+
+    redis_client.set(query, json.dumps(result))  # Store the result as a JSON string
+    return result
 
 if "show_questions" not in st.session_state:
     st.session_state.show_questions = False
