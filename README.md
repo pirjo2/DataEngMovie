@@ -27,7 +27,7 @@ The Movielens dataset has been transformed into a semi-structured format for thi
 
 The first step is to download the tmdb_5000_movies.csv and tmdb_5000_credits.csv from [TMDB 5000](https://www.kaggle.com/datasets/tmdb/tmdb-movie-metadata/data?select=tmdb_5000_movies.csv) into movie_data folder. These files are too large to be uploaded to git. Movielens data has already been added since it was modified for this project.
 
-To run the application, run the following commands in order
+To run the application, navigate to <b>airflow</b> folder and run the following commands in order:
 ```
 docker compose airflow-init --remove-orphans
 ```
