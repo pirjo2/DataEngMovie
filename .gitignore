@@ -40,6 +40,3 @@ movie_data/tmdb_5000_movies.csv
 
 ### Intellij ###
 .idea
-
-### Gradle ###
-.gradle
