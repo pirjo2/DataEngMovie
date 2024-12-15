@@ -29,7 +29,7 @@ The first step is to download the tmdb_5000_movies.csv and tmdb_5000_credits.csv
 
 To run the application, navigate to <b>airflow</b> folder and run the following commands in order:
 ```
-docker compose airflow-init --remove-orphans
+docker compose up airflow-init --remove-orphans
 ```
 If previous finished with code 0:
 ```
