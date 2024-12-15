@@ -42,12 +42,12 @@ The <b>username and password</b> for Airflow are both "airflow".
 
 
 ## Load Data into Database
-First, make sure all of the following DAGs are unpaused:
-1. create_star_schema_duckdb
-2. load_data_into_star_schema
-3. movie_data_processing_pipeline
-4. start_streamlit
-5. stop_streamlit
+Before triggering the pipeline (DAG <b>"movie_data_processing_pipeline"</b>), make sure all of the following DAGs are unpaused (the toggle in front of DAG name is blue):
+- create_star_schema_duckdb
+- load_data_into_star_schema
+- movie_data_processing_pipeline
+- start_streamlit
+- stop_streamlit
 
 Trigger DAG <b>"movie_data_processing_pipeline"</b>.
 
